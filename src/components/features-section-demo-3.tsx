@@ -2,8 +2,6 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import createGlobe from "cobe";
-import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Play,
@@ -365,62 +363,86 @@ export const SkeletonThree = () => {
   );
 };
 
-// Skeleton Four - Global Scale Globe
+// Skeleton Four - Global Scale (CSS-only version for static export)
 export const SkeletonFour = () => {
+  const cities = [
+    { name: "NYC", x: 75, y: 30 },
+    { name: "Miami", x: 70, y: 50 },
+    { name: "LA", x: 20, y: 40 },
+    { name: "Chicago", x: 55, y: 28 },
+    { name: "Atlanta", x: 65, y: 42 },
+  ];
+
   return (
-    <div className="h-60 md:h-60 flex flex-col items-center relative bg-transparent mt-10">
-      <GlobeComponent className="absolute -right-10 md:-right-10 -bottom-80 md:-bottom-72" />
+    <div className="h-60 md:h-60 flex flex-col items-center justify-center relative bg-transparent mt-10 overflow-hidden">
+      {/* Globe visualization */}
+      <div className="relative w-48 h-48">
+        {/* Globe base */}
+        <motion.div
+          className="absolute inset-0 rounded-full border-2 border-cyan-500/30 bg-gradient-to-br from-blue-900/20 to-cyan-900/20"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+        >
+          {/* Grid lines */}
+          <div className="absolute inset-0 rounded-full overflow-hidden">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={`lat-${i}`}
+                className="absolute w-full border-t border-cyan-500/10"
+                style={{ top: `${20 + i * 15}%` }}
+              />
+            ))}
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={`lng-${i}`}
+                className="absolute h-full border-l border-cyan-500/10"
+                style={{ left: `${15 + i * 15}%` }}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* City markers */}
+        {cities.map((city, i) => (
+          <motion.div
+            key={city.name}
+            className="absolute flex flex-col items-center"
+            style={{ left: `${city.x}%`, top: `${city.y}%` }}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.2, duration: 0.5 }}
+          >
+            <motion.div
+              className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]"
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 2, delay: i * 0.3, repeat: Infinity }}
+            />
+            <span className="text-[9px] text-cyan-300/70 mt-1 font-medium">
+              {city.name}
+            </span>
+          </motion.div>
+        ))}
+
+        {/* Center pulse */}
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-cyan-500"
+          animate={{ scale: [1, 2, 1], opacity: [1, 0, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+      </div>
+
+      {/* Stats */}
+      <div className="flex gap-6 mt-6 text-xs text-neutral-400">
+        <span className="flex items-center gap-1">
+          <Globe className="w-3 h-3 text-cyan-400" weight="duotone" />
+          5 cities
+        </span>
+        <span className="flex items-center gap-1">
+          <Target className="w-3 h-3 text-blue-400" weight="duotone" />
+          12 niches
+        </span>
+      </div>
     </div>
   );
 };
 
-export const GlobeComponent = ({ className }: { className?: string }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    let phi = 0;
-
-    if (!canvasRef.current) return;
-
-    const globe = createGlobe(canvasRef.current, {
-      devicePixelRatio: 2,
-      width: 600 * 2,
-      height: 600 * 2,
-      phi: 0,
-      theta: 0,
-      dark: 1,
-      diffuse: 1.2,
-      mapSamples: 16000,
-      mapBrightness: 6,
-      baseColor: [0.15, 0.15, 0.2],
-      markerColor: [0.1, 0.8, 1],
-      glowColor: [0.1, 0.3, 0.5],
-      markers: [
-        // Major cities for lead generation
-        { location: [25.7617, -80.1918], size: 0.08 }, // Miami
-        { location: [41.8781, -87.6298], size: 0.08 }, // Chicago
-        { location: [33.749, -84.388], size: 0.06 }, // Atlanta
-        { location: [34.0522, -118.2437], size: 0.08 }, // LA
-        { location: [40.7128, -74.006], size: 0.1 }, // NYC
-        { location: [29.7604, -95.3698], size: 0.06 }, // Houston
-        { location: [47.6062, -122.3321], size: 0.05 }, // Seattle
-      ],
-      onRender: (state) => {
-        state.phi = phi;
-        phi += 0.005;
-      },
-    });
-
-    return () => {
-      globe.destroy();
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ width: 600, height: 600, maxWidth: "100%", aspectRatio: 1 }}
-      className={className}
-    />
-  );
-};
