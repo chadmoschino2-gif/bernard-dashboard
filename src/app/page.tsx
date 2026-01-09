@@ -23,13 +23,14 @@ import {
   Calendar,
 } from "@phosphor-icons/react";
 import Link from "next/link";
+import { PinContainer } from "@/components/ui/3d-pin";
 
 // Minimal sidebar icons
 const sidebarIcons = [
   { icon: House, label: "Dashboard", href: "/", active: true },
-  { icon: Rocket, label: "Activate", href: "#activate" },
-  { icon: Database, label: "Database", href: "#" },
-  { icon: Gear, label: "Settings", href: "#" },
+  { icon: Rocket, label: "Activate", href: "/activate" },
+  { icon: Database, label: "Database", href: "#database" },
+  { icon: Gear, label: "Settings", href: "/settings" },
 ];
 
 export default function Dashboard() {
@@ -184,24 +185,21 @@ export default function Dashboard() {
               </div>
             </motion.div>
 
-            {/* Action Cards - Initiate & Auto Run */}
+            {/* Action Cards - Initiate & Auto Run with PinContainer */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
               id="activate"
             >
               {/* Initiate Single Scan */}
-              <button
-                onClick={handleActivate}
-                disabled={isActivating}
-                className="group relative bg-gradient-to-br from-[#111] to-[#0a1520] rounded-2xl border border-blue-900/30 p-6 text-left hover:border-cyan-500/50 transition-all duration-300 overflow-hidden"
-              >
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                <div className="relative z-10">
+              <PinContainer title="Click to run single scan">
+                <button
+                  onClick={handleActivate}
+                  disabled={isActivating}
+                  className="w-full text-left"
+                >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
                       <Play className="w-6 h-6 text-white" weight="fill" />
@@ -227,19 +225,16 @@ export default function Dashboard() {
                       {isActivating ? "Scanning..." : "Ready"}
                     </span>
                   </div>
-                </div>
-              </button>
+                </button>
+              </PinContainer>
 
               {/* Auto Run 5-Day Cycle */}
-              <button
-                onClick={handleAutoRun}
-                disabled={isAutoRunning}
-                className="group relative bg-gradient-to-br from-[#111] to-[#0a1a10] rounded-2xl border border-emerald-900/30 p-6 text-left hover:border-emerald-500/50 transition-all duration-300 overflow-hidden"
-              >
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                <div className="relative z-10">
+              <PinContainer title="Click to start 5-day cycle">
+                <button
+                  onClick={handleAutoRun}
+                  disabled={isAutoRunning}
+                  className="w-full text-left"
+                >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
                       <Repeat className="w-6 h-6 text-white" weight="bold" />
@@ -265,8 +260,8 @@ export default function Dashboard() {
                       {isAutoRunning ? "Running..." : "Autonomous"}
                     </span>
                   </div>
-                </div>
-              </button>
+                </button>
+              </PinContainer>
             </motion.div>
 
             {/* Recent Runs */}
