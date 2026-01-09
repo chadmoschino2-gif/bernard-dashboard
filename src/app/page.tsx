@@ -27,6 +27,24 @@ import Link from "next/link";
 import { PinContainer } from "@/components/ui/3d-pin";
 import { AceternitySidebar } from "@/components/ui/aceternity-sidebar";
 
+type Run = {
+  id: number;
+  started_at: string;
+  finished_at: string | null;
+  city: string;
+  state: string;
+  niche: string;
+  max_leads: number;
+  status: string;
+  total_leads: number;
+};
+
+type Stats = {
+  totalLeads: number;
+  totalRuns: number;
+  latestRun: Run | null;
+};
+
 // Swift-like spring animation presets
 const springTransition = {
   type: "spring",
@@ -73,6 +91,8 @@ export default function Dashboard() {
   const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
+  const [recentRuns, setRecentRuns] = useState<Run[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
 
   const cities = ["Miami", "Atlanta", "Chicago", "Raleigh", "Los Angeles"];
   const niches = ["Restaurants", "Gyms", "Salons", "Contractors", "Dentists"];
@@ -167,6 +187,52 @@ export default function Dashboard() {
       if (interval) clearInterval(interval);
     };
   }, [API_URL, isActivating, isAutoRunning, isRunning]);
+
+  // Fetch runs + stats for dashboard cards (non-blocking)
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchRunsAndStats = async () => {
+      try {
+        const [runsRes, statsRes] = await Promise.all([
+          fetch(`${API_URL}/api/runs`, { cache: "no-store" }),
+          fetch(`${API_URL}/api/stats`, { cache: "no-store" }),
+        ]);
+
+        if (!runsRes.ok) throw new Error("Failed to load runs");
+        const runsData: { runs: Run[] } = await runsRes.json();
+        const statsData: Stats | { error: string } = statsRes.ok
+          ? await statsRes.json()
+          : { error: "stats unavailable" };
+
+        if (cancelled) return;
+        setRecentRuns((runsData.runs ?? []).slice(0, 3));
+        if (!("error" in statsData)) setStats(statsData);
+      } catch {
+        // Ignore: keep placeholders if API is cold
+      }
+    };
+
+    fetchRunsAndStats();
+    const interval = setInterval(fetchRunsAndStats, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [API_URL]);
+
+  const timeAgo = (iso: string) => {
+    const d = new Date(iso);
+    const diff = Date.now() - d.getTime();
+    if (Number.isNaN(diff)) return "—";
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins} min ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs} hr${hrs === 1 ? "" : "s"} ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days} day${days === 1 ? "" : "s"} ago`;
+  };
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0a]">
@@ -380,11 +446,11 @@ export default function Dashboard() {
             >
               <h2 className="text-lg font-medium text-white mb-4">Recent Runs</h2>
               <div className="space-y-3">
-                {[
-                  { city: "Miami", niche: "Restaurants", leads: 47, time: "2 hours ago" },
-                  { city: "Atlanta", niche: "Dentists", leads: 32, time: "Yesterday" },
-                  { city: "Chicago", niche: "Gyms", leads: 28, time: "2 days ago" },
-                ].map((run, i) => (
+                {(recentRuns.length > 0 ? recentRuns : [
+                  { id: 0, city: "Miami", niche: "Restaurants", total_leads: 47, started_at: new Date().toISOString(), state: "", status: "", finished_at: null, max_leads: 0 },
+                  { id: 0, city: "Atlanta", niche: "Dentists", total_leads: 32, started_at: new Date(Date.now() - 86400000).toISOString(), state: "", status: "", finished_at: null, max_leads: 0 },
+                  { id: 0, city: "Chicago", niche: "Gyms", total_leads: 28, started_at: new Date(Date.now() - 2 * 86400000).toISOString(), state: "", status: "", finished_at: null, max_leads: 0 },
+                ] as Run[]).map((run, i) => (
                   <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-neutral-900/50 border border-neutral-800">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
@@ -392,11 +458,11 @@ export default function Dashboard() {
                       </div>
                       <div>
                         <p className="text-sm text-white">{run.city} - {run.niche}</p>
-                        <p className="text-xs text-neutral-500">{run.time}</p>
+                        <p className="text-xs text-neutral-500">{timeAgo(run.started_at)}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-cyan-400">{run.leads} leads</p>
+                      <p className="text-sm font-medium text-cyan-400">{run.total_leads} leads</p>
                       <p className="text-xs text-neutral-500">Saved to Database</p>
                     </div>
                   </div>
@@ -448,7 +514,7 @@ export default function Dashboard() {
                   <ChartLineUp className="w-4 h-4" weight="bold" />
                 </div>
                 <div>
-                  <p className="text-2xl font-light text-white leading-none">847</p>
+                  <p className="text-2xl font-light text-white leading-none">{stats?.totalLeads ?? 0}</p>
                   <p className="text-xs text-neutral-500 mt-1">Total Leads</p>
                 </div>
               </div>
