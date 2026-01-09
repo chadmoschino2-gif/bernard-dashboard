@@ -2,361 +2,312 @@
 
 import { motion } from "framer-motion";
 import {
-    BookOpen,
+    Terminal,
+    Gear,
+    MapPin,
+    Storefront,
     Play,
-    Clock,
-    CheckCircle,
-    Lightning,
-    Target,
-    ArrowRight,
-    Info,
-    Warning,
-    Lightbulb,
     Repeat,
-    Fire,
-    Sparkle,
-    Star,
+    Code,
+    FileText,
+    FolderOpen,
+    Lightning,
 } from "@phosphor-icons/react";
-import { CardSpotlight } from "@/components/ui/card-spotlight";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-const operationSteps = [
-    {
-        title: "Pre-Run Checklist",
-        items: [
-            "Verify your Notion integration is connected",
-            "Confirm target cities are configured",
-            "Check niche categories are set",
-            "Review scoring thresholds if customized",
-        ],
-        icon: CheckCircle,
-        color: "emerald",
-    },
-    {
-        title: "Running a Single Scan",
-        items: [
-            "Navigate to the Dashboard",
-            "Click the 'Initiate' 3D button",
-            "Wait for the scan to complete (~5 minutes)",
-            "Check your Notion database for new leads",
-        ],
-        icon: Play,
-        color: "blue",
-    },
-    {
-        title: "Setting Up Autonomous Mode",
-        items: [
-            "Click the 'Auto Run' 3D button",
-            "Bernard will run daily for 5 consecutive days",
-            "Each day targets different city/niche combinations",
-            "Leads are automatically scored and pushed to Notion",
-        ],
-        icon: Repeat,
-        color: "cyan",
-    },
-    {
-        title: "Understanding Lead Scores",
-        items: [
-            "Premium: Immediate opportunity, no website or critical issues",
-            "Hot: High potential, poor web presence or outdated site",
-            "Warm: Good prospect, minor issues or growth signals",
-            "Cool: Worth monitoring, already has decent presence",
-        ],
-        icon: Target,
-        color: "purple",
-    },
-];
-
-const tips = [
-    {
-        type: "tip",
-        icon: Lightbulb,
-        title: "Pro Tip",
-        content:
-            "Start with 2-3 cities and 1 niche to test your outreach messaging before scaling up.",
-    },
-    {
-        type: "info",
-        icon: Info,
-        title: "Good to Know",
-        content:
-            "Bernard rotates through your configured targets to ensure even coverage and avoid duplicate leads.",
-    },
-    {
-        type: "warning",
-        icon: Warning,
-        title: "Important",
-        content:
-            "Allow 24 hours between manual runs for the same city/niche combination to avoid rate limiting.",
-    },
-];
-
-const Step = ({ title }: { title: string }) => {
-    return (
-        <li className="flex gap-2 items-start">
-            <CheckIcon />
-            <p className="text-white text-sm">{title}</p>
-        </li>
-    );
-};
-
-const CheckIcon = () => {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="h-4 w-4 text-blue-500 mt-0.5 shrink-0"
-        >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path
-                d="M12 2c-.218 0 -.432 .002 -.642 .005l-.616 .017l-.299 .013l-.579 .034l-.553 .046c-4.785 .464 -6.732 2.411 -7.196 7.196l-.046 .553l-.034 .579c-.005 .098 -.01 .198 -.013 .299l-.017 .616l-.004 .318l-.001 .324c0 .218 .002 .432 .005 .642l.017 .616l.013 .299l.034 .579l.046 .553c.464 4.785 2.411 6.732 7.196 7.196l.553 .046l.579 .034c.098 .005 .198 .01 .299 .013l.616 .017l.642 .005l.642 -.005l.616 -.017l.299 -.013l.579 -.034l.553 -.046c4.785 -.464 6.732 -2.411 7.196 -7.196l.046 -.553l.034 -.579c.005 -.098 .01 -.198 .013 -.299l.017 -.616l.005 -.642l-.005 -.642l-.017 -.616l-.013 -.299l-.034 -.579l-.046 -.553c-.464 -4.785 -2.411 -6.732 -7.196 -7.196l-.553 -.046l-.579 -.034a28.058 28.058 0 0 0 -.299 -.013l-.616 -.017l-.318 -.004l-.324 -.001zm2.293 7.293a1 1 0 0 1 1.497 1.32l-.083 .094l-4 4a1 1 0 0 1 -1.32 .083l-.094 -.083l-2 -2a1 1 0 0 1 1.32 -1.497l.094 .083l1.293 1.292l3.293 -3.292z"
-                fill="currentColor"
-                strokeWidth="0"
-            />
-        </svg>
-    );
-};
 
 export default function OperationsPage() {
     return (
-        <div className="p-4 md:p-6 lg:p-8 space-y-8 max-w-6xl mx-auto">
-            {/* Header */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                        <BookOpen className="w-6 h-6 text-white" weight="duotone" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">Operations Guide</h1>
-                        <p className="text-muted-foreground">
-                            Learn how to use Bernard effectively
-                        </p>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* Quick Start Card */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-            >
-                <CardSpotlight className="p-8">
-                    <div className="flex flex-col md:flex-row md:items-center gap-4 relative z-20">
-                        <div className="flex-1">
-                            <Badge className="mb-3 bg-blue-500/20 text-blue-400 border-blue-500/30">
-                                Quick Start
-                            </Badge>
-                            <h2 className="text-xl font-semibold mb-2 text-white">
-                                Ready to run your first scan?
-                            </h2>
-                            <p className="text-neutral-400">
-                                Head to the Dashboard, click 'Initiate', and watch Bernard
-                                discover qualified leads in your target market.
-                            </p>
-                        </div>
-                        <Link href="/">
-                            <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 whitespace-nowrap">
-                                Go to Dashboard
-                                <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                        </Link>
-                    </div>
-                </CardSpotlight>
-            </motion.div>
-
-            {/* Operation Steps with CardSpotlight */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {operationSteps.map((step, index) => (
-                    <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
+        <div className="min-h-screen bg-[#0a0a0a] p-8">
+            <div className="max-w-4xl mx-auto">
+                {/* Header */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-12"
+                >
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-cyan-400 transition-colors mb-6"
                     >
-                        <CardSpotlight className="h-full p-6">
-                            <div className="relative z-20">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div
-                                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${step.color === "emerald"
-                                                ? "bg-emerald-500/20"
-                                                : step.color === "blue"
-                                                    ? "bg-blue-500/20"
-                                                    : step.color === "cyan"
-                                                        ? "bg-cyan-500/20"
-                                                        : "bg-purple-500/20"
-                                            }`}
-                                    >
-                                        <step.icon
-                                            className={`w-5 h-5 ${step.color === "emerald"
-                                                    ? "text-emerald-400"
-                                                    : step.color === "blue"
-                                                        ? "text-blue-400"
-                                                        : step.color === "cyan"
-                                                            ? "text-cyan-400"
-                                                            : "text-purple-400"
-                                                }`}
-                                            weight="duotone"
-                                        />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-white">
-                                        {step.title}
-                                    </h3>
-                                </div>
-                                <ul className="space-y-2">
-                                    {step.items.map((item, itemIndex) => (
-                                        <Step key={itemIndex} title={item} />
-                                    ))}
-                                </ul>
-                            </div>
-                        </CardSpotlight>
-                    </motion.div>
-                ))}
-            </div>
+                        ← Back to Dashboard
+                    </Link>
 
-            {/* Lead Scoring Legend */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-            >
-                <CardSpotlight className="p-6">
-                    <div className="relative z-20">
-                        <h2 className="text-xl font-semibold flex items-center gap-2 text-white mb-6">
-                            <Star className="w-5 h-5 text-yellow-400" weight="duotone" />
-                            Lead Scoring System
-                        </h2>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {[
-                                {
-                                    label: "Premium",
-                                    color: "from-yellow-500 to-orange-500",
-                                    icon: Fire,
-                                    desc: "Immediate opportunity",
-                                },
-                                {
-                                    label: "Hot",
-                                    color: "from-orange-500 to-red-500",
-                                    icon: Sparkle,
-                                    desc: "High potential",
-                                },
-                                {
-                                    label: "Warm",
-                                    color: "from-blue-500 to-cyan-500",
-                                    icon: Lightning,
-                                    desc: "Good prospect",
-                                },
-                                {
-                                    label: "Cool",
-                                    color: "from-slate-500 to-slate-600",
-                                    icon: Target,
-                                    desc: "Worth monitoring",
-                                },
-                            ].map((score, i) => (
-                                <div
-                                    key={i}
-                                    className="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800"
-                                >
-                                    <div
-                                        className={`w-10 h-10 rounded-lg bg-gradient-to-br ${score.color} flex items-center justify-center mb-3`}
-                                    >
-                                        <score.icon
-                                            className="w-5 h-5 text-white"
-                                            weight="duotone"
-                                        />
-                                    </div>
-                                    <p className="font-semibold text-white">{score.label}</p>
-                                    <p className="text-xs text-neutral-500">{score.desc}</p>
-                                </div>
-                            ))}
-                        </div>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
+                        <Terminal className="w-4 h-4 text-emerald-400" weight="fill" />
+                        <span className="text-sm text-emerald-400">Operations Guide</span>
                     </div>
-                </CardSpotlight>
-            </motion.div>
 
-            {/* Tips Section with CardSpotlight */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="space-y-4"
-            >
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-yellow-400" weight="duotone" />
-                    Tips & Best Practices
-                </h2>
+                    <h1 className="text-4xl font-light text-white mb-4">
+                        Running Bernard
+                    </h1>
+                    <p className="text-lg text-neutral-400">
+                        Complete guide to operating the autonomous lead scraper
+                    </p>
+                </motion.div>
 
-                <div className="grid gap-4">
-                    {tips.map((tip, index) => (
-                        <CardSpotlight
-                            key={index}
-                            className={`p-5 border-l-4 ${tip.type === "tip"
-                                    ? "border-l-yellow-500"
-                                    : tip.type === "info"
-                                        ? "border-l-blue-500"
-                                        : "border-l-orange-500"
-                                }`}
-                        >
-                            <div className="flex items-start gap-3 relative z-20">
-                                <tip.icon
-                                    className={`w-5 h-5 shrink-0 ${tip.type === "tip"
-                                            ? "text-yellow-400"
-                                            : tip.type === "info"
-                                                ? "text-blue-400"
-                                                : "text-orange-400"
-                                        }`}
-                                    weight="duotone"
-                                />
-                                <div>
-                                    <p className="font-medium text-sm mb-1 text-white">
-                                        {tip.title}
-                                    </p>
-                                    <p className="text-sm text-neutral-400">{tip.content}</p>
-                                </div>
-                            </div>
-                        </CardSpotlight>
-                    ))}
-                </div>
-            </motion.div>
+                {/* Quick Start */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-gradient-to-br from-[#111] to-[#0a1520] rounded-2xl border border-blue-900/30 p-8 mb-8"
+                >
+                    <h2 className="text-2xl font-semibold text-white mb-4 flex items-center gap-3">
+                        <Lightning className="w-6 h-6 text-cyan-400" weight="fill" />
+                        Quick Start
+                    </h2>
 
-            {/* Time Estimates */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-            >
-                <CardSpotlight className="p-6">
-                    <div className="relative z-20">
-                        <h3 className="text-lg font-semibold flex items-center gap-2 mb-4 text-white">
-                            <Clock className="w-5 h-5 text-cyan-400" weight="duotone" />
-                            Time Estimates
+                    <div className="bg-black/50 rounded-xl p-4 mb-6 font-mono text-sm">
+                        <p className="text-neutral-500 mb-2"># Navigate to scraper directory</p>
+                        <p className="text-cyan-400">cd /path/to/bernard-scraper</p>
+                        <p className="text-neutral-500 mt-4 mb-2"># Run the scraper</p>
+                        <p className="text-cyan-400">npm start</p>
+                    </div>
+
+                    <p className="text-neutral-400">
+                        This will scrape leads using your configured cities and niches, then push them to Notion automatically.
+                    </p>
+                </motion.div>
+
+                {/* Configuration */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-[#111] rounded-2xl border border-neutral-800 p-8 mb-8"
+                >
+                    <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
+                        <Gear className="w-6 h-6 text-white" weight="duotone" />
+                        Configuration
+                    </h2>
+
+                    {/* Master Config */}
+                    <div className="mb-8">
+                        <h3 className="text-lg font-medium text-white mb-3 flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-cyan-400" />
+                            Master Config
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 rounded-lg bg-neutral-900/50 border border-neutral-800">
-                                <p className="text-2xl font-bold text-blue-400">~5 min</p>
-                                <p className="text-sm text-neutral-500">Single scan duration</p>
-                            </div>
-                            <div className="p-4 rounded-lg bg-neutral-900/50 border border-neutral-800">
-                                <p className="text-2xl font-bold text-emerald-400">50-200</p>
-                                <p className="text-sm text-neutral-500">Leads per city/niche</p>
-                            </div>
-                            <div className="p-4 rounded-lg bg-neutral-900/50 border border-neutral-800">
-                                <p className="text-2xl font-bold text-cyan-400">5 days</p>
-                                <p className="text-sm text-neutral-500">Autonomous run cycle</p>
-                            </div>
+                        <p className="text-neutral-400 mb-4">
+                            Edit <code className="text-cyan-400 bg-neutral-900 px-2 py-1 rounded">config/master.json</code> to control what Bernard scrapes:
+                        </p>
+
+                        <div className="bg-black/50 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+                            <pre className="text-neutral-300">{`{
+  "activeNiches": ["web-design", "payment-processors"],
+  "activeCities": ["miami", "atlanta", "raleigh"],
+  "runSchedule": "daily",
+  "maxLeadsPerCity": 100,
+  "outputDestination": "notion"
+}`}</pre>
                         </div>
                     </div>
-                </CardSpotlight>
-            </motion.div>
+
+                    {/* Cities */}
+                    <div className="mb-8">
+                        <h3 className="text-lg font-medium text-white mb-3 flex items-center gap-2">
+                            <MapPin className="w-5 h-5 text-emerald-400" />
+                            Add New Cities
+                        </h3>
+                        <p className="text-neutral-400 mb-4">
+                            Create a JSON file in <code className="text-cyan-400 bg-neutral-900 px-2 py-1 rounded">config/cities/</code>:
+                        </p>
+
+                        <div className="bg-black/50 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+                            <pre className="text-neutral-300">{`{
+  "cityName": "Miami",
+  "state": "Florida",
+  "stateCode": "FL",
+  "country": "USA",
+  "neighborhoods": ["Downtown", "Brickell", "Wynwood"],
+  "dataSources": {
+    "primary": ["google_maps", "yelp"]
+  }
+}`}</pre>
+                        </div>
+                    </div>
+
+                    {/* Niches */}
+                    <div>
+                        <h3 className="text-lg font-medium text-white mb-3 flex items-center gap-2">
+                            <Storefront className="w-5 h-5 text-blue-400" />
+                            Add New Niches
+                        </h3>
+                        <p className="text-neutral-400 mb-4">
+                            Create a JSON file in <code className="text-cyan-400 bg-neutral-900 px-2 py-1 rounded">config/niches/</code>:
+                        </p>
+
+                        <div className="bg-black/50 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+                            <pre className="text-neutral-300">{`{
+  "nicheName": "Web Design",
+  "targetIndustries": [
+    "restaurants", "gyms", "salons", "contractors"
+  ],
+  "signals": {
+    "primary": ["no_website", "broken_website"],
+    "secondary": ["active_social", "recent_reviews"]
+  },
+  "outreachAngle": "Outdated website hurting visibility"
+}`}</pre>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Running Modes */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+                >
+                    {/* Single Scan */}
+                    <div className="bg-gradient-to-br from-[#111] to-[#0a1520] rounded-2xl border border-blue-900/30 p-6">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-4 shadow-lg shadow-cyan-500/20">
+                            <Play className="w-6 h-6 text-white" weight="fill" />
+                        </div>
+
+                        <h3 className="text-xl font-semibold text-white mb-2">Single Scan</h3>
+                        <p className="text-neutral-400 mb-4 text-sm">
+                            Run once and stop. Perfect for testing configurations.
+                        </p>
+
+                        <div className="bg-black/50 rounded-lg p-3 font-mono text-xs">
+                            <p className="text-cyan-400">npm start</p>
+                        </div>
+                    </div>
+
+                    {/* Auto Run */}
+                    <div className="bg-gradient-to-br from-[#111] to-[#0a1a10] rounded-2xl border border-emerald-900/30 p-6">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/20">
+                            <Repeat className="w-6 h-6 text-white" weight="bold" />
+                        </div>
+
+                        <h3 className="text-xl font-semibold text-white mb-2">Scheduled Run</h3>
+                        <p className="text-neutral-400 mb-4 text-sm">
+                            Set up a daily cron job for autonomous operation.
+                        </p>
+
+                        <div className="bg-black/50 rounded-lg p-3 font-mono text-xs">
+                            <p className="text-neutral-500"># Run daily at 3 AM</p>
+                            <p className="text-cyan-400">0 3 * * * npm start</p>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* What Bernard Does */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="bg-[#111] rounded-2xl border border-neutral-800 p-8 mb-8"
+                >
+                    <h2 className="text-2xl font-semibold text-white mb-6">
+                        What Happens When Bernard Runs
+                    </h2>
+
+                    <div className="space-y-6">
+                        {[
+                            {
+                                step: 1,
+                                title: "Scrape Google Maps",
+                                description: "Searches for businesses in your target cities and industries",
+                                time: "~2-3 min per city",
+                            },
+                            {
+                                step: 2,
+                                title: "Website Validation",
+                                description: "Checks each business website to detect broken, placeholder, or outdated sites",
+                                time: "~5-10 seconds per lead",
+                            },
+                            {
+                                step: 3,
+                                title: "Lead Scoring",
+                                description: "Ranks leads as Premium, Hot, Warm, or Cool based on signals",
+                                time: "Instant",
+                            },
+                            {
+                                step: 4,
+                                title: "Push to Notion",
+                                description: "Sends all validated and scored leads to your Notion database",
+                                time: "~1 second per lead",
+                            },
+                        ].map((item) => (
+                            <div key={item.step} className="flex gap-4">
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center">
+                                    <span className="text-sm font-medium text-cyan-400">{item.step}</span>
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="text-white font-medium mb-1">{item.title}</h4>
+                                    <p className="text-sm text-neutral-400 mb-1">{item.description}</p>
+                                    <p className="text-xs text-neutral-500">⏱️ {item.time}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* File Structure */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="bg-[#111] rounded-2xl border border-neutral-800 p-8 mb-8"
+                >
+                    <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
+                        <FolderOpen className="w-6 h-6 text-white" weight="duotone" />
+                        Project Structure
+                    </h2>
+
+                    <div className="bg-black/50 rounded-xl p-4 font-mono text-sm">
+                        <pre className="text-neutral-300">{`bernard-scraper/
+├── config/
+│   ├── master.json              # Main configuration
+│   ├── cities/                  # City configs
+│   │   ├── miami.json
+│   │   └── raleigh.json
+│   └── niches/                  # Niche configs
+│       ├── web-design.json
+│       └── payment-processors.json
+├── scrapers/
+│   ├── google-maps.js           # Google Maps scraper
+│   └── website-checker.js       # Website validator
+├── scoring/
+│   └── triage.js                # Lead scoring engine
+├── output/
+│   └── notion-writer.js         # Notion integration
+├── main.js                      # Entry point
+└── .env                         # Your credentials`}</pre>
+                    </div>
+                </motion.div>
+
+                {/* Tips */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="bg-gradient-to-br from-[#111] to-[#0a1a1a] rounded-2xl border border-cyan-900/30 p-8"
+                >
+                    <h2 className="text-2xl font-semibold text-white mb-6">
+                        Pro Tips
+                    </h2>
+
+                    <ul className="space-y-3">
+                        {[
+                            "Start with 1-2 cities to test your configuration",
+                            "Premium leads (no website + high reviews) close fastest",
+                            "Run during off-peak hours (2-5 AM) to avoid rate limits",
+                            "Check Notion daily - fresh leads go stale quickly",
+                            "Customize outreach angles per niche in config files",
+                        ].map((tip, i) => (
+                            <li key={i} className="flex items-start gap-3">
+                                <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-xs text-cyan-400">✓</span>
+                                </div>
+                                <span className="text-neutral-300">{tip}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </motion.div>
+            </div>
         </div>
     );
 }
