@@ -12,6 +12,7 @@ import {
     ChartLineUp,
     Database,
     Lightning,
+    TelegramLogo,
 } from "@phosphor-icons/react";
 import {
     Sidebar,
@@ -195,6 +196,18 @@ export function AppSidebar() {
 
             <SidebarFooter className="p-4 border-t border-sidebar-border">
                 <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            asChild
+                            tooltip="Contact @imChadGPT"
+                            className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                        >
+                            <a href="https://t.me/imChadGPT" target="_blank" rel="noopener noreferrer">
+                                <TelegramLogo className="w-5 h-5" weight="duotone" />
+                                <span>Contact Support</span>
+                            </a>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             tooltip="Sign Out"
