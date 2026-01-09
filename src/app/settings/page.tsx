@@ -1,26 +1,93 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-    Bell,
-    Envelope,
+    Gear,
+    MapPin,
+    Storefront,
+    Hash,
     ArrowClockwise,
     Check,
-    Gear,
+    Play,
+    Trash,
     Lightning,
-    NotionLogo,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 
-export default function SettingsPage() {
-    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-    const [emailNotifications, setEmailNotifications] = useState(false);
-    const [email, setEmail] = useState("");
+const API_URL = "http://localhost:3001";
 
-    const handleReset = () => {
-        if (confirm("Are you sure you want to refresh the page? Any unsaved changes will be lost.")) {
-            window.location.reload();
+export default function SettingsPage() {
+    const [config, setConfig] = useState({
+        city: "Raleigh",
+        state: "NC",
+        niche: "restaurants",
+        maxLeads: 10,
+        sources: ["google_maps", "yelp"],
+    });
+    const [saved, setSaved] = useState(false);
+    const [logs, setLogs] = useState<string[]>([]);
+    const [isRunning, setIsRunning] = useState(false);
+
+    const cities = [
+        { name: "Raleigh", state: "NC" },
+        { name: "Miami", state: "FL" },
+        { name: "Atlanta", state: "GA" },
+        { name: "Chicago", state: "IL" },
+        { name: "Los Angeles", state: "CA" },
+    ];
+
+    const niches = ["restaurants", "gyms", "salons", "contractors", "dentists"];
+
+    // Load config on mount
+    useEffect(() => {
+        fetch(`${API_URL}/api/config`)
+            .then(r => r.json())
+            .then(setConfig)
+            .catch(() => { });
+
+        // Poll for status
+        const interval = setInterval(() => {
+            fetch(`${API_URL}/api/status`)
+                .then(r => r.json())
+                .then(data => {
+                    setIsRunning(data.isRunning);
+                    setLogs(data.logs || []);
+                })
+                .catch(() => { });
+        }, 2000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const saveConfig = async () => {
+        try {
+            await fetch(`${API_URL}/api/config`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(config),
+            });
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch {
+            alert("Server not running. Start: npm run server");
+        }
+    };
+
+    const runScraper = async () => {
+        try {
+            await fetch(`${API_URL}/api/scan/single`, { method: "POST" });
+        } catch {
+            alert("Server not running.");
+        }
+    };
+
+    const clearDatabase = async () => {
+        if (!confirm("Clear all leads from database?")) return;
+        try {
+            await fetch(`${API_URL}/api/clear`, { method: "POST" });
+        } catch {
+            alert("Server not running.");
         }
     };
 
@@ -31,7 +98,7 @@ export default function SettingsPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-12"
+                    className="mb-8"
                 >
                     <Link
                         href="/"
@@ -40,161 +107,201 @@ export default function SettingsPage() {
                         ← Back to Dashboard
                     </Link>
 
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
-                        <Gear className="w-4 h-4 text-blue-400" weight="fill" />
-                        <span className="text-sm text-blue-400">Settings</span>
-                    </div>
-
-                    <h1 className="text-4xl font-light text-white mb-4">
-                        Configuration
+                    <h1 className="text-3xl font-light text-white mb-2 flex items-center gap-3">
+                        <Gear className="w-8 h-8 text-cyan-400" weight="duotone" />
+                        Bot Configuration
                     </h1>
-                    <p className="text-lg text-neutral-400">
-                        Manage Bernard's preferences and notifications
+                    <p className="text-neutral-400">
+                        Configure Bernard's scraping settings
                     </p>
                 </motion.div>
 
-                {/* Notifications */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="bg-[#111] rounded-2xl border border-neutral-800 p-8 mb-6"
-                >
-                    <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
-                        <Bell className="w-6 h-6 text-white" weight="duotone" />
-                        Notifications
-                    </h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Configuration Panel */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-[#111] rounded-2xl border border-neutral-800 p-6"
+                    >
+                        <h2 className="text-xl font-semibold text-white mb-6">Settings</h2>
 
-                    {/* Toggle Notifications */}
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-neutral-900/50 border border-neutral-800 mb-4">
-                        <div>
-                            <h3 className="text-white font-medium mb-1">Enable Notifications</h3>
-                            <p className="text-sm text-neutral-400">Get notified when new leads are found</p>
+                        {/* City */}
+                        <div className="mb-6">
+                            <label className="flex items-center gap-2 text-sm text-neutral-400 mb-2">
+                                <MapPin className="w-4 h-4" />
+                                Target City
+                            </label>
+                            <select
+                                value={config.city}
+                                onChange={(e) => {
+                                    const city = cities.find(c => c.name === e.target.value);
+                                    setConfig({ ...config, city: city?.name || "Raleigh", state: city?.state || "NC" });
+                                }}
+                                className="w-full bg-black/50 border border-neutral-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
+                            >
+                                {cities.map(city => (
+                                    <option key={city.name} value={city.name}>
+                                        {city.name}, {city.state}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
-                        <button
-                            onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-                            className={`w-14 h-8 rounded-full transition-colors relative ${notificationsEnabled ? "bg-cyan-500" : "bg-neutral-700"
-                                }`}
-                        >
-                            <div
-                                className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform ${notificationsEnabled ? "translate-x-7" : "translate-x-1"
-                                    }`}
-                            />
-                        </button>
-                    </div>
 
-                    {/* Email Notifications */}
-                    {notificationsEnabled && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            className="space-y-4"
+                        {/* Niche */}
+                        <div className="mb-6">
+                            <label className="flex items-center gap-2 text-sm text-neutral-400 mb-2">
+                                <Storefront className="w-4 h-4" />
+                                Industry Niche
+                            </label>
+                            <select
+                                value={config.niche}
+                                onChange={(e) => setConfig({ ...config, niche: e.target.value })}
+                                className="w-full bg-black/50 border border-neutral-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
+                            >
+                                {niches.map(niche => (
+                                    <option key={niche} value={niche}>
+                                        {niche.charAt(0).toUpperCase() + niche.slice(1)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Max Leads */}
+                        <div className="mb-6">
+                            <label className="flex items-center gap-2 text-sm text-neutral-400 mb-2">
+                                <Hash className="w-4 h-4" />
+                                Max Leads Per Run
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="50"
+                                value={config.maxLeads}
+                                onChange={(e) => setConfig({ ...config, maxLeads: parseInt(e.target.value) || 10 })}
+                                className="w-full bg-black/50 border border-neutral-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
+                            />
+                        </div>
+
+                        {/* Sources */}
+                        <div className="mb-6">
+                            <label className="text-sm text-neutral-400 mb-2 block">
+                                Data Sources
+                            </label>
+                            <div className="space-y-2">
+                                {["google_maps", "yelp"].map(source => (
+                                    <label key={source} className="flex items-center gap-3 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={config.sources.includes(source)}
+                                            onChange={(e) => {
+                                                const sources = e.target.checked
+                                                    ? [...config.sources, source]
+                                                    : config.sources.filter(s => s !== source);
+                                                setConfig({ ...config, sources });
+                                            }}
+                                            className="w-4 h-4 rounded bg-black border-neutral-700"
+                                        />
+                                        <span className="text-white">
+                                            {source === "google_maps" ? "Google Maps" : "Yelp"}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Save Button */}
+                        <button
+                            onClick={saveConfig}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium hover:from-cyan-400 hover:to-blue-500 transition-all"
                         >
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-neutral-900/50 border border-neutral-800">
-                                <div>
-                                    <h3 className="text-white font-medium mb-1">Email Notifications</h3>
-                                    <p className="text-sm text-neutral-400">Receive daily summaries via email</p>
-                                </div>
+                            {saved ? (
+                                <>
+                                    <Check className="w-5 h-5" weight="bold" />
+                                    Saved!
+                                </>
+                            ) : (
+                                <>
+                                    <ArrowClockwise className="w-5 h-5" />
+                                    Save Configuration
+                                </>
+                            )}
+                        </button>
+                    </motion.div>
+
+                    {/* Actions & Status Panel */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="space-y-6"
+                    >
+                        {/* Quick Actions */}
+                        <div className="bg-[#111] rounded-2xl border border-neutral-800 p-6">
+                            <h2 className="text-xl font-semibold text-white mb-4">Actions</h2>
+
+                            <div className="grid grid-cols-2 gap-3">
                                 <button
-                                    onClick={() => setEmailNotifications(!emailNotifications)}
-                                    className={`w-14 h-8 rounded-full transition-colors relative ${emailNotifications ? "bg-cyan-500" : "bg-neutral-700"
-                                        }`}
+                                    onClick={runScraper}
+                                    disabled={isRunning}
+                                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/30 transition-all disabled:opacity-50"
                                 >
-                                    <div
-                                        className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform ${emailNotifications ? "translate-x-7" : "translate-x-1"
-                                            }`}
-                                    />
+                                    <Play className="w-5 h-5" weight="fill" />
+                                    Run Now
+                                </button>
+
+                                <button
+                                    onClick={clearDatabase}
+                                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-400 hover:bg-red-500/30 transition-all"
+                                >
+                                    <Trash className="w-5 h-5" />
+                                    Clear DB
                                 </button>
                             </div>
 
-                            {emailNotifications && (
-                                <div className="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800">
-                                    <label className="text-sm text-neutral-400 mb-2 flex items-center gap-2">
-                                        <Envelope className="w-4 h-4" />
-                                        Email Address
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="your@email.com"
-                                        className="w-full bg-black/50 border border-neutral-700 rounded-lg px-4 py-2 text-white placeholder:text-neutral-500 focus:outline-none focus:border-cyan-500"
-                                    />
-                                    {email && (
-                                        <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1">
-                                            <Check className="w-3 h-3" /> Email configured
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                        </motion.div>
-                    )}
-                </motion.div>
-
-                {/* Quick Actions */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-[#111] rounded-2xl border border-neutral-800 p-8 mb-6"
-                >
-                    <h2 className="text-2xl font-semibold text-white mb-6">
-                        Quick Actions
-                    </h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button
-                            onClick={handleReset}
-                            className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/50 border border-neutral-800 hover:border-cyan-500/50 transition-all text-left group"
-                        >
-                            <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center group-hover:bg-cyan-500/30 transition-colors">
-                                <ArrowClockwise className="w-5 h-5 text-cyan-400" weight="bold" />
+                            <div className={`mt-4 px-3 py-2 rounded-lg text-sm ${isRunning ? "bg-cyan-500/20 text-cyan-400" : "bg-neutral-800 text-neutral-400"}`}>
+                                {isRunning ? "⏳ Scraper running..." : "⏸️ Idle"}
                             </div>
-                            <div>
-                                <h3 className="text-white font-medium">Refresh Page</h3>
-                                <p className="text-xs text-neutral-500">Reset the dashboard</p>
-                            </div>
-                        </button>
+                        </div>
 
-                        <Link
-                            href="/"
-                            className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900/50 border border-neutral-800 hover:border-emerald-500/50 transition-all group"
-                        >
-                            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/30 transition-colors">
-                                <Lightning className="w-5 h-5 text-emerald-400" weight="fill" />
-                            </div>
-                            <div>
-                                <h3 className="text-white font-medium">Back to Dashboard</h3>
-                                <p className="text-xs text-neutral-500">Return to main view</p>
-                            </div>
-                        </Link>
-                    </div>
-                </motion.div>
+                        {/* Live Logs */}
+                        <div className="bg-[#111] rounded-2xl border border-neutral-800 p-6">
+                            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                                <Lightning className="w-5 h-5 text-cyan-400" />
+                                Live Logs
+                            </h2>
 
-                {/* Integration Status */}
+                            <div className="bg-black/50 rounded-xl p-4 h-64 overflow-y-auto font-mono text-xs">
+                                {logs.length === 0 ? (
+                                    <p className="text-neutral-500">No logs yet. Run the scraper to see output.</p>
+                                ) : (
+                                    logs.map((log, i) => (
+                                        <div key={i} className="text-neutral-300 mb-1">
+                                            {log}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+
+                {/* Server Instructions */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-gradient-to-br from-[#111] to-[#0a1a1a] rounded-2xl border border-cyan-900/30 p-8"
+                    className="mt-6 bg-gradient-to-br from-[#111] to-[#0a1a1a] rounded-2xl border border-cyan-900/30 p-6"
                 >
-                    <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
-                        <NotionLogo className="w-6 h-6 text-white" weight="fill" />
-                        Notion Integration
-                    </h2>
-
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-black/30">
-                            <span className="text-neutral-400">Status</span>
-                            <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm">
-                                Connected
-                            </span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-black/30">
-                            <span className="text-neutral-400">Database</span>
-                            <span className="text-white">Bernard Lead Database</span>
-                        </div>
-                    </div>
+                    <h3 className="text-lg font-medium text-white mb-3">
+                        🚀 Start the API Server
+                    </h3>
+                    <p className="text-neutral-400 mb-4">
+                        Run this command to enable the dashboard controls:
+                    </p>
+                    <code className="block bg-black/50 rounded-lg px-4 py-3 text-cyan-400 font-mono text-sm">
+                        cd bernard-scraper && npm run server
+                    </code>
                 </motion.div>
             </div>
         </div>
