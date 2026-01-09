@@ -15,7 +15,8 @@ import {
 } from "@phosphor-icons/react";
 import Link from "next/link";
 
-const API_URL = "http://localhost:3001";
+// API base URL - overridable in production via NEXT_PUBLIC_API_URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://bernard-scraperg.onrender.com";
 
 export default function SettingsPage() {
     const [config, setConfig] = useState({

@@ -1,6 +1,13 @@
-# Static site hosting - no build required (pre-built locally)
+# Bernard Dashboard - Netlify Configuration
 [build]
+  command = "npm run build"
   publish = "out"
+
+# Environment variables (set these in Netlify dashboard)
+# NEXT_PUBLIC_API_URL = your backend URL (e.g., https://your-backend.railway.app)
+
+[build.environment]
+  NEXT_PUBLIC_API_URL = "https://bernard-scraperg.onrender.com"
 
 # Headers for security and caching
 [[headers]]
@@ -9,8 +16,14 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
 
 [[headers]]
   for = "/_next/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_next/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"

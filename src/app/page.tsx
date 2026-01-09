@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Play,
@@ -21,9 +21,11 @@ import {
   Clock,
   Repeat,
   Calendar,
+  ChartLineUp,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { PinContainer } from "@/components/ui/3d-pin";
+import { AceternitySidebar } from "@/components/ui/aceternity-sidebar";
 
 // Swift-like spring animation presets
 const springTransition = {
@@ -60,13 +62,6 @@ const pulseGlow = {
   },
 };
 
-// Minimal sidebar icons
-const sidebarIcons = [
-  { icon: House, label: "Dashboard", href: "/", active: true },
-  { icon: Rocket, label: "Activate", href: "/activate" },
-  { icon: Database, label: "Database", href: "#database" },
-  { icon: Gear, label: "Settings", href: "/settings" },
-];
 
 export default function Dashboard() {
   const [isActivating, setIsActivating] = useState(false);
@@ -75,12 +70,16 @@ export default function Dashboard() {
   const [selectedCity, setSelectedCity] = useState("Raleigh");
   const [selectedNiche, setSelectedNiche] = useState("Restaurants");
   const [statusMessage, setStatusMessage] = useState("");
+  const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
 
   const cities = ["Miami", "Atlanta", "Chicago", "Raleigh", "Los Angeles"];
   const niches = ["Restaurants", "Gyms", "Salons", "Contractors", "Dentists"];
 
-  // API base URL - for local development
-  const API_URL = "http://localhost:3001";
+  // API base URL - overridable in production via NEXT_PUBLIC_API_URL
+  const API_URL = 
+    process.env.NEXT_PUBLIC_API_URL ?? "https://bernard-scraperg.onrender.com";
 
   const handleActivate = async () => {
     setIsActivating(true);
@@ -94,13 +93,16 @@ export default function Dashboard() {
       });
 
       if (res.ok) {
-        setStatusMessage("Scraper running! Check Notion for leads.");
+        setStatusMessage("Scraper running! View leads in the Database tab.");
         setIsConnected(true);
+        setIsBackendOnline(true);
       } else {
-        setStatusMessage("Server not running. Run: npm run server");
+        setStatusMessage("Server not running. Make sure the Bernard API is deployed and reachable.");
+        setIsBackendOnline(false);
       }
     } catch {
-      setStatusMessage("Start local server: cd bernard-scraper && npm run server");
+      setStatusMessage("Cannot reach Bernard API. Start it locally or set NEXT_PUBLIC_API_URL to your deployed server.");
+      setIsBackendOnline(false);
     }
 
     setTimeout(() => setIsActivating(false), 2000);
@@ -120,61 +122,61 @@ export default function Dashboard() {
       if (res.ok) {
         setStatusMessage("5-day autonomous run started! Leads will populate daily.");
         setIsConnected(true);
+        setIsBackendOnline(true);
       } else {
-        setStatusMessage("Server not running. Run: npm run server");
+        setStatusMessage("Server not running. Make sure the Bernard API is deployed and reachable.");
+        setIsBackendOnline(false);
       }
     } catch {
-      setStatusMessage("Start local server: cd bernard-scraper && npm run server");
+      setStatusMessage("Cannot reach Bernard API. Start it locally or set NEXT_PUBLIC_API_URL to your deployed server.");
+      setIsBackendOnline(false);
     }
 
     setTimeout(() => setIsAutoRunning(false), 2000);
   };
 
+  // Poll backend status/logs while a run is active
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/status`);
+        if (!res.ok) {
+          setIsBackendOnline(false);
+          return;
+        }
+        const data: { isRunning: boolean; logs: string[] } = await res.json();
+        setIsRunning(data.isRunning);
+        setLogs(data.logs ?? []);
+        setIsBackendOnline(true);
+      } catch {
+        setIsBackendOnline(false);
+      }
+    };
+
+    // Initial check
+    fetchStatus();
+
+    // Poll every 3s while activating/auto-running or while backend reports running
+    if (isActivating || isAutoRunning || isRunning) {
+      interval = setInterval(fetchStatus, 3000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [API_URL, isActivating, isAutoRunning, isRunning]);
+
   return (
     <div className="flex min-h-screen bg-[#0a0a0a]">
-      {/* Minimal Icon Sidebar */}
-      <aside className="w-16 bg-[#111] border-r border-neutral-800 flex flex-col items-center py-6 gap-6">
-        {/* Logo */}
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-4">
-          <Lightning className="w-5 h-5 text-white" weight="fill" />
-        </div>
-
-        {/* Nav Icons */}
-        <nav className="flex flex-col gap-4 flex-1">
-          {sidebarIcons.map((item, i) => (
-            <Link
-              key={i}
-              href={item.href}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${item.active
-                ? "bg-cyan-500/20 text-cyan-400"
-                : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800"
-                }`}
-            >
-              <item.icon className="w-5 h-5" weight={item.active ? "fill" : "regular"} />
-            </Link>
-          ))}
-        </nav>
-
-        {/* Bottom Icons */}
-        <div className="flex flex-col gap-4">
-          <a
-            href="https://t.me/imChadGPT"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
-          >
-            <TelegramLogo className="w-5 h-5" weight="duotone" />
-          </a>
-          <button className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800 transition-all">
-            <Bell className="w-5 h-5" />
-          </button>
-        </div>
-      </aside>
+      {/* Aceternity Sidebar */}
+      <AceternitySidebar />
 
       {/* Main Content */}
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 ml-16 md:ml-64 transition-all duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-light text-white tracking-tight">
               Bernard
@@ -183,15 +185,51 @@ export default function Dashboard() {
               Autonomous Lead Scraper
             </p>
           </div>
-          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+              {/* Notification bell */}
+              <button
+                type="button"
+                className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-800 bg-neutral-900/40 text-neutral-400 hover:text-neutral-100 hover:border-neutral-700 hover:bg-neutral-800 transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute -top-0.5 -right-0.5 inline-flex h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-neutral-900" />
+              </button>
+
             <div className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 ${isConnected
               ? "bg-emerald-500/20 text-emerald-400"
               : "bg-neutral-800 text-neutral-400"
               }`}>
               <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-neutral-500"}`} />
-              {isConnected ? "Connected to Notion" : "Not Connected"}
+              {isConnected ? "Connected" : "Not Connected"}
             </div>
           </div>
+        </div>
+
+        {/* Connection / Status strip */}
+        <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div className="text-xs text-neutral-400">
+            {statusMessage && <p>{statusMessage}</p>}
+            {isBackendOnline === false && (
+              <p className="text-amber-400 flex items-center gap-1">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
+                Backend offline. Start `npm run server` in <code className="font-mono">bernard-scraper</code> or set{" "}
+                <code className="font-mono">NEXT_PUBLIC_API_URL</code> to your deployed API.
+              </p>
+            )}
+            {isBackendOnline && (
+              <p className="text-emerald-400 flex items-center gap-1">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Bernard API reachable at <code className="font-mono">{API_URL}</code>
+              </p>
+            )}
+          </div>
+          {isRunning && (
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs text-emerald-300">
+              <CircleNotch className="w-3 h-3 animate-spin" weight="bold" />
+              <span>Scraper is currently running…</span>
+            </div>
+          )}
         </div>
 
         {/* Main Grid */}
@@ -333,7 +371,7 @@ export default function Dashboard() {
               </PinContainer>
             </motion.div>
 
-            {/* Recent Runs */}
+            {/* Recent Runs (placeholder) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -359,7 +397,7 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-cyan-400">{run.leads} leads</p>
-                      <p className="text-xs text-neutral-500">Pushed to Notion</p>
+                      <p className="text-xs text-neutral-500">Saved to Database</p>
                     </div>
                   </div>
                 ))}
@@ -369,7 +407,7 @@ export default function Dashboard() {
 
           {/* Right Panel */}
           <div className="space-y-6">
-            {/* Notion Connection */}
+            {/* Notion Connection (backend already handles Notion via environment variables) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -405,21 +443,41 @@ export default function Dashboard() {
               transition={{ delay: 0.2 }}
               className="grid grid-cols-2 gap-3"
             >
-              <div className="bg-[#111] rounded-xl border border-neutral-800 p-4">
-                <p className="text-2xl font-light text-white">847</p>
-                <p className="text-xs text-neutral-500 mt-1">Total Leads</p>
+              <div className="bg-[#111] rounded-xl border border-neutral-800 p-4 flex items-start gap-3">
+                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-400">
+                  <ChartLineUp className="w-4 h-4" weight="bold" />
+                </div>
+                <div>
+                  <p className="text-2xl font-light text-white leading-none">847</p>
+                  <p className="text-xs text-neutral-500 mt-1">Total Leads</p>
+                </div>
               </div>
-              <div className="bg-[#111] rounded-xl border border-neutral-800 p-4">
-                <p className="text-2xl font-light text-cyan-400">156</p>
-                <p className="text-xs text-neutral-500 mt-1">Premium</p>
+              <div className="bg-[#111] rounded-xl border border-neutral-800 p-4 flex items-start gap-3">
+                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400">
+                  <Lightning className="w-4 h-4" weight="fill" />
+                </div>
+                <div>
+                  <p className="text-2xl font-light text-cyan-400 leading-none">156</p>
+                  <p className="text-xs text-neutral-500 mt-1">Premium</p>
+                </div>
               </div>
-              <div className="bg-emerald-500/10 rounded-xl border border-emerald-500/20 p-4">
-                <p className="text-2xl font-light text-emerald-400">89%</p>
-                <p className="text-xs text-emerald-400/70 mt-1">Sync Rate</p>
+              <div className="bg-emerald-500/10 rounded-xl border border-emerald-500/20 p-4 flex items-start gap-3">
+                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/25 text-emerald-300">
+                  <CircleNotch className="w-4 h-4 animate-spin-slow" weight="bold" />
+                </div>
+                <div>
+                  <p className="text-2xl font-light text-emerald-400 leading-none">89%</p>
+                  <p className="text-xs text-emerald-400/70 mt-1">Sync Rate</p>
+                </div>
               </div>
-              <div className="bg-[#111] rounded-xl border border-neutral-800 p-4">
-                <p className="text-2xl font-light text-white">5</p>
-                <p className="text-xs text-neutral-500 mt-1">Cities</p>
+              <div className="bg-[#111] rounded-xl border border-neutral-800 p-4 flex items-start gap-3">
+                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-800 text-neutral-200">
+                  <Globe className="w-4 h-4" weight="fill" />
+                </div>
+                <div>
+                  <p className="text-2xl font-light text-white leading-none">5</p>
+                  <p className="text-xs text-neutral-500 mt-1">Cities</p>
+                </div>
               </div>
             </motion.div>
 
