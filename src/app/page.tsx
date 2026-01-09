@@ -72,28 +72,62 @@ export default function Dashboard() {
   const [isActivating, setIsActivating] = useState(false);
   const [isAutoRunning, setIsAutoRunning] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [selectedCity, setSelectedCity] = useState("Miami");
+  const [selectedCity, setSelectedCity] = useState("Raleigh");
   const [selectedNiche, setSelectedNiche] = useState("Restaurants");
+  const [statusMessage, setStatusMessage] = useState("");
 
   const cities = ["Miami", "Atlanta", "Chicago", "Raleigh", "Los Angeles"];
   const niches = ["Restaurants", "Gyms", "Salons", "Contractors", "Dentists"];
 
-  const handleActivate = () => {
+  // API base URL - for local development
+  const API_URL = "http://localhost:3001";
+
+  const handleActivate = async () => {
     setIsActivating(true);
-    // Simulate activation
-    setTimeout(() => {
-      setIsActivating(false);
-      setIsConnected(true);
-    }, 3000);
+    setStatusMessage("Starting single scan...");
+
+    try {
+      const res = await fetch(`${API_URL}/api/scan/single`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ city: selectedCity, niche: selectedNiche }),
+      });
+
+      if (res.ok) {
+        setStatusMessage("Scraper running! Check Notion for leads.");
+        setIsConnected(true);
+      } else {
+        setStatusMessage("Server not running. Run: npm run server");
+      }
+    } catch {
+      setStatusMessage("Start local server: cd bernard-scraper && npm run server");
+    }
+
+    setTimeout(() => setIsActivating(false), 2000);
   };
 
-  const handleAutoRun = () => {
+  const handleAutoRun = async () => {
     setIsAutoRunning(true);
-    // Simulate 5-day autonomous run setup
-    setTimeout(() => {
-      setIsAutoRunning(false);
-      setIsConnected(true);
-    }, 4000);
+    setStatusMessage("Starting 5-day auto run...");
+
+    try {
+      const res = await fetch(`${API_URL}/api/scan/auto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ city: selectedCity, niche: selectedNiche, days: 5 }),
+      });
+
+      if (res.ok) {
+        setStatusMessage("5-day autonomous run started! Leads will populate daily.");
+        setIsConnected(true);
+      } else {
+        setStatusMessage("Server not running. Run: npm run server");
+      }
+    } catch {
+      setStatusMessage("Start local server: cd bernard-scraper && npm run server");
+    }
+
+    setTimeout(() => setIsAutoRunning(false), 2000);
   };
 
   return (
