@@ -25,6 +25,41 @@ import {
 import Link from "next/link";
 import { PinContainer } from "@/components/ui/3d-pin";
 
+// Swift-like spring animation presets
+const springTransition = {
+  type: "spring",
+  stiffness: 300,
+  damping: 30,
+};
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { ...springTransition, delay: 0 } },
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const pulseGlow = {
+  animate: {
+    boxShadow: [
+      "0 0 20px rgba(6, 182, 212, 0.2)",
+      "0 0 40px rgba(6, 182, 212, 0.4)",
+      "0 0 20px rgba(6, 182, 212, 0.2)",
+    ],
+    transition: {
+      duration: 2,
+      repeat: Infinity,
+      ease: "easeInOut",
+    },
+  },
+};
+
 // Minimal sidebar icons
 const sidebarIcons = [
   { icon: House, label: "Dashboard", href: "/", active: true },
