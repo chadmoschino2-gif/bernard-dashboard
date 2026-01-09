@@ -1,9 +1,6 @@
+# Static site hosting - no build required (pre-built locally)
 [build]
-  command = "npm run build"
   publish = "out"
-
-[build.environment]
-  NODE_VERSION = "20"
 
 # Headers for security and caching
 [[headers]]
