@@ -36,6 +36,7 @@ type Lead = {
   hasWebsite?: boolean;
   facebook?: string;
   instagram?: string;
+  description?: string | null;
   created_at: string;
 };
 
@@ -97,11 +98,12 @@ export default function DatabasePage() {
 
   const exportCSV = () => {
     const exportLeads = getExportLeads();
-    const headers = ["Name", "Phone", "Email", "Google Maps URL", "Address", "Source", "Rating", "Reviews", "Has Website", "Facebook", "Instagram", "Date"];
+    const headers = ["Name", "Description", "Phone", "Email", "Google Maps URL", "Address", "Source", "Rating", "Reviews", "Has Website", "Facebook", "Instagram", "Date"];
     const rows = exportLeads.map((l) => {
       const mapUrl = l.url || `https://www.google.com/maps/search/${encodeURIComponent(l.name + " " + (l.address || ""))}`;
       return [
         l.name,
+        l.description || "",
         l.phone || "",
         l.email || "",
         mapUrl,
@@ -151,6 +153,7 @@ export default function DatabasePage() {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Description</th>
               <th>Phone</th>
               <th>Email</th>
               <th>Address</th>
@@ -162,6 +165,7 @@ export default function DatabasePage() {
             ${exportLeads.map(l => `
               <tr>
                 <td>${l.name}</td>
+                <td>${l.description || "-"}</td>
                 <td>${l.phone || "-"}</td>
                 <td>${l.email || "-"}</td>
                 <td>${l.address || "-"}</td>
@@ -318,6 +322,13 @@ export default function DatabasePage() {
                             </span>
                           )}
                         </div>
+
+                        {/* Company Description/Category */}
+                        {lead.description && (
+                          <p className="text-sm text-neutral-400 mb-2 leading-relaxed">
+                            {lead.description}
+                          </p>
+                        )}
 
                         {/* Phone - Primary contact method */}
                         {lead.phone ? (
