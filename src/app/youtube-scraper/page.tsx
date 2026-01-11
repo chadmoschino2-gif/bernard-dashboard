@@ -10,47 +10,48 @@ import {
   IconRocket,
   IconBolt,
   IconLoader2,
+  IconBrandYoutube,
 } from "@tabler/icons-react";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 
 const flipWords = ["powerful", "autonomous", "intelligent", "efficient"];
 
-export default function Dashboard() {
+export default function YouTubeScraper() {
   const [isActivating, setIsActivating] = useState(false);
   const [isAutoRunning, setIsAutoRunning] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
 
-  // City/State mapping
-  // Free text inputs - start empty for fresh experience
-  const [location, setLocation] = useState("");
-  const [niche, setNiche] = useState("");
+  // YouTube-specific inputs
+  const [searchQuery, setSearchQuery] = useState("");
+  const [channelFilter, setChannelFilter] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
 
-  // Dynamic AI filter examples with shifting numbers
-  const aiFilterExamples = [
-    "Dentists rating > 4.5",
-    "Plumbers with no website",
-    "Restaurants reviews > 100",
-    "Real Estate rating > 4.0",
-    "Gyms with no website",
-    "Lawyers rating > 4.8"
+  // Dynamic YouTube search examples
+  const youtubeSearchExamples = [
+    "Marketing tutorials",
+    "Business coaching",
+    "Tech startups",
+    "Real estate tips",
+    "E-commerce guides",
+    "SaaS companies"
+  ];
+
+  // Dynamic channel filter examples
+  const channelFilterExamples = [
+    "Subscribers > 10k",
+    "Views > 100k",
+    "Uploads > 50",
+    "Recent activity",
+    "Channel age > 2 years",
+    "Engagement > 5%"
   ];
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-  // Parse location into city and state - no defaults
-  const parseLocation = (loc: string) => {
-    const parts = loc.split(",").map(s => s.trim());
-    return {
-      city: parts[0] || "",
-      state: parts[1] || ""
-    };
-  };
-
-  // Validation: both location and filter must be filled
-  const isFormValid = location.trim().length > 0 && niche.trim().length > 0;
+  // Validation: both search query and filter must be filled
+  const isFormValid = searchQuery.trim().length > 0 && channelFilter.trim().length > 0;
 
   // Check backend status on load
   useEffect(() => {
@@ -74,35 +75,33 @@ export default function Dashboard() {
   // Rotate placeholders
   useEffect(() => {
     const timer = setInterval(() => {
-      setPlaceholderIndex((i) => (i + 1) % aiFilterExamples.length);
+      setPlaceholderIndex((i) => (i + 1) % youtubeSearchExamples.length);
     }, 2500);
     return () => clearInterval(timer);
-  }, [aiFilterExamples.length]);
+  }, [youtubeSearchExamples.length]);
 
   const handleSingleScan = async () => {
     if (!isFormValid) return;
 
     setIsActivating(true);
-    const { city, state } = parseLocation(location);
-    setStatusMessage(`Scanning ${city}${state ? `, ${state}` : ""} for ${niche}...`);
+    setStatusMessage(`Scraping YouTube for "${searchQuery}" with ${channelFilter}...`);
 
     try {
-      const res = await fetch(`${API_URL}/api/scan/single`, {
+      const res = await fetch(`${API_URL}/api/youtube/scan/single`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          city,
-          state,
-          niche: niche,
+          searchQuery,
+          channelFilter,
         }),
       });
 
       if (res.ok) {
-        setStatusMessage("Scraper running...");
+        setStatusMessage("YouTube scraper running...");
         setIsRunning(true);
         // Clear fields after successful submission
-        setLocation("");
-        setNiche("");
+        setSearchQuery("");
+        setChannelFilter("");
       } else {
         const err = await res.json();
         setStatusMessage(`Error: ${err.error || "Failed to start"}`);
@@ -118,17 +117,15 @@ export default function Dashboard() {
     if (!isFormValid) return;
 
     setIsAutoRunning(true);
-    const { city, state } = parseLocation(location);
-    setStatusMessage(`Starting 5-day cycle for ${city}...`);
+    setStatusMessage(`Starting 5-day cycle for "${searchQuery}"...`);
 
     try {
-      const res = await fetch(`${API_URL}/api/scan/auto`, {
+      const res = await fetch(`${API_URL}/api/youtube/scan/auto`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          city,
-          state,
-          niche,
+          searchQuery,
+          channelFilter,
           days: 5,
         }),
       });
@@ -137,8 +134,8 @@ export default function Dashboard() {
         setStatusMessage("Auto-run active.");
         setIsRunning(true);
         // Clear fields after successful submission
-        setLocation("");
-        setNiche("");
+        setSearchQuery("");
+        setChannelFilter("");
       } else {
         setStatusMessage("Failed to start.");
       }
@@ -148,8 +145,6 @@ export default function Dashboard() {
 
     setTimeout(() => setIsAutoRunning(false), 2000);
   };
-
-
 
   return (
     <div className="flex min-h-screen bg-black">
@@ -173,57 +168,60 @@ export default function Dashboard() {
 
           {/* Logo & Title */}
           <div className="mb-10 text-center">
-            <h1 className="text-white text-5xl md:text-7xl font-bold tracking-tight drop-shadow-[0_0_30px_rgba(6,182,212,0.3)]">
-              Bernard
-            </h1>
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <IconBrandYoutube className="w-12 h-12 md:w-16 md:h-16 text-red-500" />
+              <h1 className="text-white text-5xl md:text-7xl font-bold tracking-tight drop-shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+                YouTube Scraper
+              </h1>
+            </div>
             <div className="text-neutral-400 text-base md:text-xl mt-4 font-light">
-              Your <FlipWords words={flipWords} className="text-cyan-400 font-semibold" /> lead scraper
+              Your <FlipWords words={flipWords} className="text-red-400 font-semibold" /> YouTube lead scraper
             </div>
           </div>
 
-          {/* Search Inputs with Global Vibe */}
+          {/* Search Inputs */}
           <div className="w-full max-w-xl space-y-4 mb-8">
             <div className="relative z-20">
               <PlaceholdersAndVanishInput
                 placeholders={[
-                  "New York, USA",
-                  "London, United Kingdom",
-                  "Tokyo, Japan",
-                  "Paris, France",
-                  "Anywhere Worldwide..."
+                  "Marketing tutorials",
+                  "Business coaching",
+                  "Tech startups",
+                  "Real estate tips",
+                  "Any YouTube content..."
                 ]}
-                onChange={(e) => setLocation(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 onSubmit={(e) => { e.preventDefault(); }}
-                value={location}
-                setValue={setLocation}
+                value={searchQuery}
+                setValue={setSearchQuery}
               />
             </div>
-            {/* AI Filter System Input */}
+            {/* Channel Filter Input */}
             <div className="relative z-10">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-400/80 font-medium text-center mb-2">
-                AI Filter System
+              <p className="text-[10px] uppercase tracking-[0.2em] text-red-400/80 font-medium text-center mb-2">
+                Channel Filter System
               </p>
               <BorderMagicInput
-                placeholder={aiFilterExamples[placeholderIndex]}
-                value={niche}
-                onChange={(e) => setNiche(e.target.value)}
+                placeholder={channelFilterExamples[placeholderIndex]}
+                value={channelFilter}
+                onChange={(e) => setChannelFilter(e.target.value)}
                 className="text-center"
               />
             </div>
             {/* 3-Step Micro Guide */}
             <div className="flex items-center justify-center gap-2 sm:gap-4 mt-8 max-w-lg mx-auto">
-              <div className="flex-1 text-center px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-white/[0.05] hover:border-cyan-500/20 transition-all duration-200">
-                <p className="text-[10px] text-cyan-400 font-semibold uppercase tracking-widest">Step 1</p>
-                <p className="text-sm text-neutral-300 mt-1 font-medium">Location</p>
+              <div className="flex-1 text-center px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-white/[0.05] hover:border-red-500/20 transition-all duration-200">
+                <p className="text-[10px] text-red-400 font-semibold uppercase tracking-widest">Step 1</p>
+                <p className="text-sm text-neutral-300 mt-1 font-medium">Search Query</p>
               </div>
               <span className="text-neutral-500 text-lg">→</span>
-              <div className="flex-1 text-center px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-white/[0.05] hover:border-cyan-500/20 transition-all duration-200">
-                <p className="text-[10px] text-cyan-400 font-semibold uppercase tracking-widest">Step 2</p>
+              <div className="flex-1 text-center px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-white/[0.05] hover:border-red-500/20 transition-all duration-200">
+                <p className="text-[10px] text-red-400 font-semibold uppercase tracking-widest">Step 2</p>
                 <p className="text-sm text-neutral-300 mt-1 font-medium">Filter</p>
               </div>
               <span className="text-neutral-500 text-lg">→</span>
-              <div className="flex-1 text-center px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-white/[0.05] hover:border-cyan-500/20 transition-all duration-200">
-                <p className="text-[10px] text-cyan-400 font-semibold uppercase tracking-widest">Step 3</p>
+              <div className="flex-1 text-center px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-white/[0.05] hover:border-red-500/20 transition-all duration-200">
+                <p className="text-[10px] text-red-400 font-semibold uppercase tracking-widest">Step 3</p>
                 <p className="text-sm text-neutral-300 mt-1 font-medium">Launch</p>
               </div>
             </div>
@@ -259,7 +257,7 @@ export default function Dashboard() {
           {/* Validation Hint */}
           {!isFormValid && !statusMessage && (
             <p className="text-neutral-500 text-xs mt-4 text-center">
-              Enter a location and filter to enable scanning
+              Enter a search query and filter to enable scanning
             </p>
           )}
 
@@ -272,9 +270,9 @@ export default function Dashboard() {
 
           {/* Quick Stats - Bottom */}
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6 text-neutral-600 text-[10px] tracking-wide">
-            <span>Target: <span className="text-neutral-400">{location || "Not set"}</span></span>
+            <span>Query: <span className="text-neutral-400">{searchQuery || "Not set"}</span></span>
             <span className="text-neutral-700">•</span>
-            <span>Filter: <span className="text-neutral-400">{niche || "Any"}</span></span>
+            <span>Filter: <span className="text-neutral-400">{channelFilter || "Any"}</span></span>
           </div>
         </Vortex>
       </main>

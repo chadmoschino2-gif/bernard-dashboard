@@ -12,24 +12,37 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
-  title: "Bernard | Autonomous Lead Scraper",
+  title: "Bernard | #1 Autonomous Lead Scraper with AI",
   description:
-    "Automated lead generation system. Find, score, and push local business leads to Notion automatically.",
+    "Bernard is the #1 autonomous lead scraper with AI-powered filterization. Describe your ideal leads in natural language — rating thresholds, website status, any niche — and get precise, high-quality results instantly.",
   keywords: [
     "lead generation",
-    "automation",
-    "SMB leads",
-    "web scraping",
+    "AI lead scraper",
+    "autonomous scraper",
+    "lead filtering",
     "business leads",
-    "notion",
+    "AI filterization",
+    "Google Maps scraper",
+    "lead generation automation",
   ],
   authors: [{ name: "Bernard AI" }],
+  icons: {
+    icon: "/favicon.png",
+  },
   openGraph: {
-    title: "Bernard | Autonomous Lead Scraper",
+    title: "Bernard | #1 Autonomous Lead Scraper with AI",
     description:
-      "Automated lead generation system. Find, score, and push local business leads to Notion automatically.",
+      "The most intelligent lead scraper. Use natural language to describe your ideal leads — Bernard's AI understands rating thresholds, website status, and any niche to deliver precise, high-quality results.",
     type: "website",
+    images: ["/og-image.png"],
   },
 };
 

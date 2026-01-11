@@ -149,12 +149,49 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
     font-feature-settings: "rlig" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   html {
     scroll-behavior: smooth;
+  }
+
+  /* GPU acceleration for animations */
+  .gloss,
+  button,
+  a,
+  [class*="transition"],
+  [class*="animate"] {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Smooth focus states */
+  *:focus-visible {
+    outline: 2px solid rgba(6, 182, 212, 0.5);
+    outline-offset: 2px;
+  }
+
+  /* Selection styling */
+  ::selection {
+    background: rgba(6, 182, 212, 0.3);
+    color: white;
+  }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -175,6 +212,52 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+
+  /* Prevent text selection lag on mobile */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection on inputs */
+  input,
+  textarea,
+  [contenteditable] {
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
+
+  /* Remove tap highlight */
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Minimum touch targets */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Smoother scrolling */
+  .overflow-y-auto,
+  .overflow-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduce motion on low-power mode */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
 }
 
 /* Glow effects */
@@ -371,4 +454,153 @@ button:active:not(:disabled) {
 
 .stagger-children>*:nth-child(5) {
   animation-delay: 0.25s;
+}
+
+/* Premium Gloss Effects */
+.gloss {
+  position: relative;
+  overflow: hidden;
+}
+
+.gloss::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.08),
+      transparent);
+  transform: skewX(-25deg);
+  transition: left 0.5s ease;
+}
+
+.gloss:hover::before {
+  left: 150%;
+}
+
+/* Glass card with premium feel */
+.glass-card {
+  background: linear-gradient(135deg,
+      rgba(20, 20, 25, 0.9) 0%,
+      rgba(15, 15, 20, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Premium button gloss */
+.btn-gloss {
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0) 50%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.2) inset;
+}
+
+/* Cyan accent glow */
+.cyan-glow {
+  box-shadow:
+    0 0 20px rgba(6, 182, 212, 0.4),
+    0 0 40px rgba(6, 182, 212, 0.2),
+    0 0 60px rgba(6, 182, 212, 0.1);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+
+  /* Faster transitions on mobile for snappy feel */
+  * {
+    transition-duration: 0.15s !important;
+  }
+
+  /* Reduce motion for performance */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Touch-friendly tap targets */
+  button,
+  a,
+  input,
+  select {
+    min-height: 44px;
+  }
+
+  /* Prevent text selection on buttons */
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smoother scrolling */
+  html {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Gradient border animation */
+@keyframes border-rotate {
+  0% {
+    --angle: 0deg;
+  }
+
+  100% {
+    --angle: 360deg;
+  }
+}
+
+/* Premium input focus */
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow:
+    0 0 0 2px rgba(6, 182, 212, 0.3),
+    0 0 20px rgba(6, 182, 212, 0.1);
+}
+
+/* Subtle card hover glow */
+.card-hover-glow {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card-hover-glow:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+}
+
+/* Text gradient animation */
+@keyframes gradient-flow {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-text {
+  background: linear-gradient(90deg,
+      #22d3ee,
+      #3b82f6,
+      #8b5cf6,
+      #3b82f6,
+      #22d3ee);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-flow 3s linear infinite;
 }
